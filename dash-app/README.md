@@ -1,8 +1,8 @@
-# dash-clinical-analytics
+# dash-reddit-trp
 
 ## About this app
 
-This dashboard allows you to explore clinic patient volume by time of the day, waiting time and care score. Drill down into high-volume days to view how the busy environment may have affected patient experience.
+This dashboard allows you to explore a preliminary analysis of content from three Men's Rights Activist Reddit feeds: `r/TheRedPill`, `r/MGTOW` and `r/MensRights`. As the first two subreddits are quarantined, this app offers an avenue for anyone interested to learn more about the content of these feeds without directly interacting wiht the content itself.
 
 ## Requirements
 
@@ -10,12 +10,12 @@ This dashboard allows you to explore clinic patient volume by time of the day, w
 
 ## How to run this app
 
-We suggest you to create a virtual environment for running this app with Python 3. Clone this repository 
+We suggest you to create a virtual environment for running this app with Python 3. Clone this repository
 and open your terminal/command prompt in the root folder.
 
 ```
-git clone https://github.com/plotly/dash-sample-apps
-cd dash-sample-apps/apps/dash-clinical-analytics
+git clone https://github.com/allisonkoh/dash-reddit-trp
+cd dash-app
 python3 -m virtualenv venv
 
 ```
@@ -24,7 +24,7 @@ In Unix system:
 source venv/bin/activate
 
 ```
-In Windows: 
+In Windows:
 
 ```
 venv\Scripts\activate
@@ -43,8 +43,3 @@ python app.py
 ## Screenshot
 
 ![screenshot](img/screencapture.png)
-
-## Resources
-
-* [Dash](https://dash.plot.ly/)
-* Inspired by [Tableau template](https://www.tableau.com/solutions/workbook/improve-patient-satisfaction-improving-cycle-time).
