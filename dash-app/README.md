@@ -15,7 +15,7 @@ and open your terminal/command prompt in the root folder.
 
 ```
 git clone https://github.com/allisonkoh/dash-reddit-trp
-cd dash-sample-apps/apps/dash-clinical-analytics
+cd dash-app
 python3 -m virtualenv venv
 
 ```
@@ -43,8 +43,3 @@ python app.py
 ## Screenshot
 
 ![screenshot](img/screencapture.png)
-
-## Resources
-
-* [Dash](https://dash.plot.ly/)
-* Inspired by [Tableau template](https://www.tableau.com/solutions/workbook/improve-patient-satisfaction-improving-cycle-time).
