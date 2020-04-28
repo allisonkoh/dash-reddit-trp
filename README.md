@@ -1,3 +1,3 @@
-# Analysis of TheRedPill SubReddit
+# Identifying Patterns in Activity from “Men’s Rights” Subreddit Feeds
 
- blah blah
+The bowels of the internet expelled what is know today as In-cels, or the “involuntarily celibate”. After starting as a internetsubculture with the intention of venting shared frustrations,the online community rapidly devolved into a petri dish ofmisogyny, racism, self-loathing and, calls to violence. As of2020, Incels can be linked to four acts of mass murder and 45 total deaths. Given the violent nature of this on-line community that has incited violence offline, we proposebuilding a tool that makes text data from `r/TheRedPill`—aquarantined subreddit available to the general public. Our aim is to enable the investigation of questions that require adeeper understanding of the online Incel community. 
