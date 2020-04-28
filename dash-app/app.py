@@ -12,6 +12,7 @@ Original file is located at
 #!pip install chart-studio
 
 import dash
+import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, ClientsideFunction
@@ -46,6 +47,9 @@ data_path = "/Users/allisonwun-huikoh/Documents/GitHub/rsub-redpill-analysis/das
 
 # read in data
 df = pd.read_csv(os.path.join(data_path,"dash-input1.csv"))
+hmdf_c = pd.read_csv(os.path.join(data_path,"hmdf_c1.csv"))
+hmdf_s = pd.read_csv(os.path.join(data_path,"hmdf_s1.csv"))
+con_df = pd.read_csv(os.path.join(data_path,"condf.csv"))
 
 # subset and recombine data for static ts plots
 df11 = df[df.attribute=='comms_num']
@@ -55,6 +59,7 @@ df13 = df[df.attribute=='score']
 df14 = df13.drop_duplicates(['id2'])
 
 df1 = df12.append(df14)
+df1 = df1.sort_values(by=["date"])
 
 # inputs 1
 subreddit_list = df.iloc[:, 7].unique().tolist() # TheRedPill MGOTW or MensRights
@@ -66,48 +71,6 @@ df["year"] = df["date"].astype(str).str[:4]
 df["date"] = pd.to_datetime(df.date)
 df = df.sort_values(by=["date"])
 
-conditions = [df['month'].str.contains('1',na=False),
-              df['month'].str.contains('2',na=False),
-              df['month'].str.contains('3',na=False),
-              df['month'].str.contains('4',na=False),
-              df['month'].str.contains('5',na=False),
-              df['month'].str.contains('6',na=False),
-              df['month'].str.contains('7',na=False),
-              df['month'].str.contains('8',na=False),
-              df['month'].str.contains('9',na=False),
-              df['month'].str.contains('10',na=False),
-              df['month'].str.contains('11',na=False),
-              df['month'].str.contains('12',na=False)]
-
-choices = ['January','February','March','April','May','June','July','August','September','October','November','December']
-df['month1'] = np.select(conditions,choices,default=np.nan)
-
-# input lists
-month_list = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December"
-]
-
-year_list = [
-    "2013",
-    "2014",
-    "2015",
-    "2016",
-    "2017",
-    "2018",
-    "2019"
-]
-
 def description_card():
     """
     :return: A Div containing dashboard title & descriptions.
@@ -115,153 +78,62 @@ def description_card():
     return html.Div(
         id="description-card",
         children=[
-            html.H3("Welcome to the Men's Rights Activist Dashboard"),
+            html.H3("Welcome to the \"Men's Rights\" Activist Dashboard"),
+            html.H6("Allison Koh & Samuel Wardwell"),
             html.Div(
                 id="intro",
-                children="Investigate patterns over time on [BLAH BLAH BLAH ADD TO THIS]",
+                children="When you think of mens rights activist discussions online, these words might come to mind:",
             ),
-        ],
-    )
 
-def generate_control_card():
-    """
-    :return: A Div containing controls for graphs.
-    """
-    return html.Div(
-        id="control-card",
-        children=[
-            html.P("Select Subreddit Feed"),
-            dcc.Dropdown(
-                id="subreddit-select",
-                options=[{"label": i, "value": i} for i in subreddit_list],
-                value=subreddit_list[0],
-            ),
-            html.P("Select Attribute"),
-            dcc.Dropdown(
-                id="attribute-select",
-                options=[{"label": i, "value": i} for i in attribute_list],
-                value=attribute_list[0],
+            html.Div(
+                id="intro1",
+                children=html.Img(src=app.get_asset_url('i_wordcloud.png')),
             ),
             html.Br(),
             html.Div(
-                id="reset-btn-outer",
-                children=html.Button(id="reset-btn", children="Reset", n_clicks=0),
+                id="intro2",
+                children="For this project, we aim to identify patterns in the top 100 \"hot\", \"controversial\" and \"top\" posts from the r/TheRedPill r/MGTOW and r/MensRights subreddit feeds.",
             ),
+            html.Br(),
+            html.Div(
+                id="intro3",
+                children="First, we illustrate activity on each Subreddit feed over time, measured by the number of comments on selected posts and the score (upvotes - downvotes).",
+            ),
+            html.Br(),
+            html.Div(
+                id="intro4",
+                children="We also investigate trends in when the most \"controversial\" posts took place by month. On Reddit, controversial posts refer to posts that spark the most discussion.",
+            ),
+            html.Br(),
+            html.Div(
+                id="intro5",
+                children="Finally, we present an overview of what users are talking about based off of a 5-topic LDA model that was run using the gensim library. We assigned labels based on assessing keywords in context for posts in each category.",
+            ),
+            html.Br(),
+            html.Div(
+                id="intro6",
+                children="A better understanding of online discussion on these feeds allows us to learn more about how this group collectivizes online to warrant being distinguished as a national security threat offline, especially in the aftermath of the 2014 terrorist attacks that took place in Canada and the United States.",
+            ),
+
         ],
     )
 
-def generate_heatmap(subreddit, post_type, attribute, reset):
-    """
-    :param: subreddit: subreddit feed from selection.
-    :param: type: type of feed (hot, top, new, controversial).
-    :param: attribute: number of comments or score (up votes minus down votes)
-    :param: reset (boolean): reset if True.
-    :return: plot of # comments or score over time.
-    """
+def generate_heatmap_data(df):
+  """
+  :return: create heatmaps for number of comments and scores
+  """
+  x = df['year'].unique().tolist()
+  y = df['month1'].unique().tolist()
+  listz = df['n'].tolist()
+  z = np.reshape(listz,(13,12)).T
+  heatmap_info = go.Heatmap(z=z,x=x,y=y)
+  return heatmap_info
 
-    filtered_df = df1[
-        (df["subreddit "] == subreddit) & (df["attribute"] == attribute)
-    ]
+fig1 = go.Figure(data=go.Heatmap(generate_heatmap_data(con_df)))
+fig1['layout']['yaxis']['autorange'] = "reversed"
+fig1.update_layout(title='Controversial Posts by Month',template='plotly_dark')
 
-    x_axis = month_list  # Month
-    y_axis = year_list # Year
-
-    month1 = ""
-    year = ""
-    shapes = []
-
-    if hm_click is not None:
-        month = hm_click["points"][0]["x"]
-        year = hm_click["points"][0]["y"]
-
-        # Add shapes
-        x0 = x_axis.index(month1) / 12
-        x1 = x0 + 1 / 12
-        y0 = y_axis.index(year) / 7
-        y1 = y0 + 1 / 7
-
-        shapes = [
-            dict(
-                type="rect",
-                xref="paper",
-                yref="paper",
-                x0=x0,
-                x1=x1,
-                y0=y0,
-                y1=y1,
-                line=dict(color="#ff6347"),
-            )
-        ]
-
-    # Get z value : sum(number of posts or score) based on x, y,
-
-    z = filtered_df['n']
-#    np.zeros((7, 12))
-#    annotations = []
-#
-#    for ind_y, year in enumerate(y_axis):
-#        filtered_year = filtered_df[filtered_df["year"] == year]
-#        for ind_x, x_val in enumerate(x_axis):
-#            sum_of_posts = filtered_year[filtered_year["month1"] == x_val][
-#                "attribute"
-#            ].sum()
-#            z[ind_y][ind_x] = sum_of_posts
-#
-#            annotation_dict = dict(
-#                showarrow=False,
-#                text="<b>" + str(sum_of_posts) + "<b>",
-#                xref="x",
-#                yref="y",
-#                x=x_val,
-#                y=year,
-#                font=dict(family="sans-serif"),
-#            )
-            # Highlight annotation text by self-click
-#            if x_val == month and year == year:
-#                if not reset:
-#                    annotation_dict.update(size=15, font=dict(color="#ff6347"))
-
-#            annotations.append(annotation_dict)
-
-    # Heatmap
-    hovertemplate = "<b> %{y}  %{x} <br><br> %{z} Comments/Upvotes"
-
-    data = [
-        dict(
-            x=x_axis,
-            y=y_axis,
-            z=z,
-            type="heatmap",
-            name="",
-            hovertemplate=hovertemplate,
-            showscale=False,
-            colorscale=[[0, "#caf3ff"], [1, "#2c82ff"]],
-        )
-    ]
-
-    layout = dict(
-        margin=dict(l=70, b=50, t=50, r=50),
-        modebar={"orientation": "v"},
-        font=dict(family="Open Sans"),
-        annotations=annotations,
-        shapes=shapes,
-        xaxis=dict(
-            side="top",
-            ticks="",
-            ticklen=2,
-            tickfont=dict(family="sans-serif"),
-            tickcolor="#ffffff",
-        ),
-        yaxis=dict(
-            side="left", ticks="", tickfont=dict(family="sans-serif"), ticksuffix=" "
-        ),
-        hovermode="closest",
-        showlegend=False,
-    )
-    return {"data": data, "layout": layout}
-
-## set index
-df1 = df1.sort_values(by=["date"])
+## set index for ts plot df
 df2 = df1.set_index(['date'])
 
 # subset for setting ts series
@@ -282,19 +154,19 @@ def generate_ts_series(df):
   ts_series = go.Scatter(x=ts_series.index, y=ts_series.values)
   return ts_series
 
-fig = make_subplots(rows=3, cols=1,
+fig2 = make_subplots(rows=3, cols=1,
                     subplot_titles=("r/TheRedPill","r/MGTOW","r/MensRights"),
                     vertical_spacing=0.12)
 
-fig.append_trace(go.Scatter(
+fig2.append_trace(go.Scatter(
     generate_ts_series(trp_df1),
     name= '# Comments',
     legendgroup="a",
     mode = 'lines',
-    marker = {'symbol':'circle', 'color':'#0D0887'}
+    marker = {'symbol':'circle', 'color':'#b613cf'}
 ), row=1, col=1)
 
-fig.append_trace(go.Scatter(
+fig2.append_trace(go.Scatter(
     generate_ts_series(trp_df2),
     name= 'Score',
     legendgroup="b",
@@ -302,16 +174,16 @@ fig.append_trace(go.Scatter(
     marker = {'symbol':'circle', 'color':'#E16462'}
 ), row=1, col=1)
 
-fig.append_trace(go.Scatter(
+fig2.append_trace(go.Scatter(
     generate_ts_series(mgtow_df1),
     name= '# Comments',
     legendgroup="a",
     showlegend = False,
     mode = 'lines',
-    marker = {'symbol':'circle', 'color':'#0D0887'}
+    marker = {'symbol':'circle', 'color':'#b613cf'}
 ), row=2, col=1)
 
-fig.append_trace(go.Scatter(
+fig2.append_trace(go.Scatter(
     generate_ts_series(mgtow_df2),
     name= 'Score',
     legendgroup="b",
@@ -320,16 +192,16 @@ fig.append_trace(go.Scatter(
     marker = {'symbol':'circle', 'color':'#E16462'}
 ), row=2, col=1)
 
-fig.append_trace(go.Scatter(
+fig2.append_trace(go.Scatter(
     generate_ts_series(mr_df1),
     name= '# Comments',
     legendgroup="a",
     showlegend = False,
     mode = 'lines',
-    marker = {'symbol':'circle', 'color':'#0D0887'}
+    marker = {'symbol':'circle', 'color':'#b613cf'}
 ), row=3, col=1)
 
-fig.append_trace(go.Scatter(
+fig2.append_trace(go.Scatter(
     generate_ts_series(mr_df2),
     name= 'Score',
     legendgroup="b",
@@ -338,20 +210,54 @@ fig.append_trace(go.Scatter(
     marker = {'symbol':'circle', 'color':'#E16462'}
 ), row=3, col=1)
 
+fig2.update_layout(title='Activity on Mens Rights Activist Subreddits',template='plotly_dark')
+
+# figure 3
+#def make_pies(df):
+#    labels = ['Topic 0','Topic 1','Topic 2', 'Topic 3', 'Topic 4']
+#    values = df['Freq'].tolist()
+#    pie_data=[go.Pie(labels=labels,values=values,hole=.3)]
+#    return pie_data
+
+labels = ['Male Victimization + Self-Loathing','Sexual Assault + Vilification of Female Sexuality','Self-Help Resources + Online Discussion', 'Tips on Navigating Life as a *Beta*', 'Role of Feminism in Society + Policy']
+specs = [[{'type':'domain'}, {'type':'domain'}], [{'type':'domain'}, {'type':'domain'}]]
+colors = ['#0D0887','#7E03A8','#CC4678','#F89441','#F0F921']
+
+fig3 = make_subplots(rows=2, cols=2,specs=specs,subplot_titles=("r/TheRedPill","r/MGTOW","r/MensRights","Controversial Posts"))
+
+fig3.add_trace(go.Pie(
+    labels=labels,
+    values=[62,26,62,34,116]
+    ), row=1, col=1)
+
+fig3.add_trace(go.Pie(
+    labels=labels,
+    values=[90,39,46,32,93]
+    ), row=1, col=2)
+
+fig3.add_trace(go.Pie(
+    labels=labels,
+    values=[18,15,18,14,35]
+    ), row=2, col=1)
+
+fig3.add_trace(go.Pie(
+    labels=labels,
+    values=[53,26,42,34,92]
+    ), row=2, col=2)
+
+fig3.update_traces(hole=.35,textfont_size=12,marker=dict(colors=colors),textposition='outside')
+
+fig3.update_layout(title='Topics of Discussion',template='plotly_dark')
+
+
 app.layout = html.Div(
     id="app-container",
     children=[
-        # Banner
-        html.Div(
-            id="banner",
-            className="banner",
-            children=[html.Img(src=app.get_asset_url("plotly_logo.png"))],
-        ),
         # Left column
         html.Div(
             id="left-column",
             className="four columns",
-            children=[description_card(), generate_control_card()]
+            children=[description_card()]
             + [
                 html.Div(
                     ["initial child"], id="output-clientside", style={"display": "none"}
@@ -364,49 +270,21 @@ app.layout = html.Div(
             className="eight columns",
             children=[
                 # Post Frequency Heatmap
-                html.Div(
-                    id="npost_card",
-                    children=[
-                        html.B("Posts over time"),
-                        html.Hr(),
-                        dcc.Graph(id="npost_hm"),
-                    ],
-                ),
+                html.Div([
+                    dcc.Graph(figure=fig2)
+                ]),
                 # Static time series plots by subreddit
                 html.Div([
-                    dcc.Graph(figure=fig)
+                    dcc.Graph(figure=fig1)
+                ]),
+                # Pie charts
+                html.Div([
+                    dcc.Graph(figure=fig3)
                 ]),
             ],
         ),
     ],
 )
-
-@app.callback(
-    Output("npost_hm", "figure"),
-    [
-        Input("subreddit-select", "value"),
-        Input("npost_hm", "clickData"),
-        Input("type-select", "value"),
-        Input("attribute-select", "value"),
-        Input("reset-btn", "n_clicks"),
-    ],
-)
-def update_heatmap(subreddit, post_type, attribute, reset):
-
-    reset = False
-    # Find which one has been triggered
-    ctx = dash.callback_context
-
-    if ctx.triggered:
-        prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
-        if prop_id == "reset-btn":
-            reset = True
-
-    # Return to original hm(no colored annotation) by resetting
-    return generate_heatmap(
-        subreddit, post_type, attribute, reset
-    )
-
 
 # Run the server
 if __name__ == "__main__":
