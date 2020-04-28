@@ -17,7 +17,6 @@ and open your terminal/command prompt in the root folder.
 git clone https://github.com/allisonkoh/dash-reddit-trp
 cd dash-app
 python3 -m virtualenv venv
-
 ```
 In Unix system:
 ```
